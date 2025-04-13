@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.28;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./interfaces/IEduToken.sol";
@@ -18,6 +18,7 @@ contract TargetContract is Ownable {
         uint256 chapterCount; // 总章节数
         bool isCompleted; // 整体完成状态
         uint256 completedDate; // 完成时间
+        uint256 passingScore; // 及格分数
     }
 
     // 章节状态结构
@@ -64,7 +65,11 @@ contract TargetContract is Ownable {
      * @param _achievementNFT AchievementNFT合约地址
      * @param _aiAgent AI Agent地址
      */
-    constructor(address _eduToken, address _achievementNFT, address _aiAgent) {
+    constructor(
+        address _eduToken,
+        address _achievementNFT,
+        address _aiAgent
+    ) Ownable(msg.sender) {
         eduToken = IEduToken(_eduToken);
         achievementNFT = IAchievementNFT(_achievementNFT);
         aiAgent = _aiAgent;
@@ -101,7 +106,8 @@ contract TargetContract is Ownable {
             daysRequired: _daysRequired,
             chapterCount: _chapterCount,
             isCompleted: false,
-            completedDate: 0
+            completedDate: 0,
+            passingScore: 80 // 默认及格分数为80
         });
 
         emit TargetCreated(msg.sender, targetId, _ipfsHash);
@@ -110,59 +116,55 @@ contract TargetContract is Ownable {
 
     /**
      * @dev AI Agent提交章节得分
-     * @param _targetId 目标ID
-     * @param _chapterIndex 章节索引
-     * @param _score 得分(0-100)
+     * @param targetId 目标ID
+     * @param chapterIndex 章节索引
+     * @param score 得分(0-100)
      */
     function submitChapterScore(
-        uint256 _targetId,
-        uint256 _chapterIndex,
-        uint256 _score
+        uint256 targetId,
+        uint256 chapterIndex,
+        uint256 score
     ) external onlyAiAgent {
-        Target storage target = targets[_targetId];
+        // 验证目标存在
+        Target storage target = targets[targetId];
+        address user = target.user;
+        require(user != address(0), "Target does not exist");
+        require(
+            chapterIndex < target.chapterCount,
+            "Chapter index out of bounds"
+        );
+        require(score <= 100, "Score must be between 0 and 100");
 
-        // 检查目标是否存在
-        require(target.user != address(0), "Target does not exist");
-        // 章节索引验证
-        require(_chapterIndex < target.chapterCount, "Invalid chapter index");
-        // 得分范围验证
-        require(_score <= 100, "Score must be between 0 and 100");
-        // 目标未完成验证
-        require(!target.isCompleted, "Target already completed");
+        ChapterStatus storage chapterStatus = chapters[targetId][chapterIndex];
+        uint256 previousScore = chapterStatus.score;
+        bool wasCompleted = chapterStatus.isCompleted;
 
         // 更新章节状态
-        chapters[_targetId][_chapterIndex].score = _score;
-        chapters[_targetId][_chapterIndex].isCompleted = (_score >= 80);
+        chapterStatus.score = score;
+        chapterStatus.isCompleted = score >= target.passingScore;
 
-        emit ChapterScored(_targetId, _chapterIndex, _score);
+        // 处理代币奖励
+        uint256 previousTokensAwarded = wasCompleted
+            ? calculateTokenReward(previousScore)
+            : 0;
+        uint256 newTokensAwarded = score >= target.passingScore
+            ? calculateTokenReward(score)
+            : 0;
 
-        // 根据得分发放代币
-        if (_score >= 80) {
-            uint256 tokenAmount;
-            if (_score >= 95) {
-                tokenAmount = 3;
-            } else if (_score >= 90) {
-                tokenAmount = 2;
-            } else {
-                tokenAmount = 1;
-            }
+        // 计算应该奖励的代币数量
+        if (newTokensAwarded > previousTokensAwarded) {
+            eduToken.mint(user, newTokensAwarded - previousTokensAwarded);
+        }
 
-            // 铸造代币
-            eduToken.mint(target.user, tokenAmount);
+        // 发出章节评分事件
+        emit ChapterScored(targetId, chapterIndex, score);
 
-            // 检查目标是否全部完成
-            if (checkTargetCompletion(_targetId)) {
-                target.isCompleted = true;
-                target.completedDate = block.timestamp;
-
-                // 铸造NFT
-                uint256 nftId = achievementNFT.mint(target.user, _targetId);
-                // 获取IPFS元数据URI
-                string memory metadataURI = achievementNFT.tokenURI(nftId);
-
-                emit TargetCompleted(_targetId, target.completedDate);
-                emit NFTCreated(target.user, nftId, metadataURI);
-            }
+        // 检查目标完成状态
+        if (!target.isCompleted && checkTargetCompletion(targetId)) {
+            target.isCompleted = true;
+            target.completedDate = block.timestamp;
+            achievementNFT.mint(user, targetId);
+            emit TargetCompleted(targetId, block.timestamp);
         }
     }
 
@@ -237,5 +239,27 @@ contract TargetContract is Ownable {
     ) external view returns (Target memory) {
         require(_targetId <= targetCounter, "Target does not exist");
         return targets[_targetId];
+    }
+
+    /**
+     * @dev 计算代币奖励
+     * @param _score 得分(0-100)
+     * @return 代币奖励数量
+     */
+    function calculateTokenReward(
+        uint256 _score
+    ) internal pure returns (uint256) {
+        require(_score <= 100, "Score must be between 0 and 100");
+        // 这里可以根据得分计算代币奖励
+        // 80-90分奖励1个代币，90-95分奖励2个代币,95分以上奖励3个代币
+        if (_score >= 95) {
+            return 3;
+        } else if (_score >= 90) {
+            return 2;
+        } else if (_score >= 80) {
+            return 1;
+        } else {
+            return 0; // 低于80分不奖励代币
+        }
     }
 }

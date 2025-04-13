@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.28;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -40,7 +40,10 @@ contract AchievementNFT is ERC721URIStorage, Ownable {
     /**
      * @dev 构造函数
      */
-    constructor() ERC721("EduChain Achievement", "EDUACH") {}
+    constructor()
+        ERC721("EduChain Achievement", "EDUACH")
+        Ownable(msg.sender)
+    {}
 
     /**
      * @dev 设置TargetContract地址
@@ -90,7 +93,7 @@ contract AchievementNFT is ERC721URIStorage, Ownable {
         uint256 _tokenId,
         string memory _tokenURI
     ) external onlyMetadataService {
-        require(_exists(_tokenId), "Token does not exist");
+        require(_ownerOf(_tokenId) != address(0), "Token does not exist");
         _setTokenURI(_tokenId, _tokenURI);
     }
 

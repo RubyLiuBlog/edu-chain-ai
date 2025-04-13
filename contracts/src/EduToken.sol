@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.28;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -24,7 +24,7 @@ contract EduToken is ERC20, Ownable {
     /**
      * @dev 构造函数
      */
-    constructor() ERC20("EduToken", "EDU") {}
+    constructor() ERC20("EduToken", "EDU") Ownable(msg.sender) {}
 
     /**
      * @dev 设置TargetContract地址
