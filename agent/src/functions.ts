@@ -22,108 +22,22 @@ const openai = new OpenAI({
   baseURL: process.env.OPENAI_BASE_URL || "https://api.openai.com/v1", // Default to OpenAI's standard URL
 });
 
-// Function to get location data
-export const getLocationFunction = new GameFunction({
-  name: "get_location",
-  description: "Get current location from IP",
-  args: [] as const,
-  executable: async (args, logger) => {
-    try {
-      // Using ipinfo.io for geolocation (free tier, no API key needed)
-      const response = await fetch("https://ipinfo.io/json");
-      const data = await response.json();
-
-      if (data.error) {
-        throw new Error(data.error.message || "Failed to get location");
-      }
-
-      // Split timezone into region/city
-      const [region, city] = (data.timezone || "").split("/");
-
-      logger(`Location detected: ${data.city}, ${data.country}`);
-
-      return new ExecutableGameFunctionResponse(
-        ExecutableGameFunctionStatus.Done,
-        JSON.stringify({
-          city: data.city,
-          country: data.country,
-          country_name: data.country,
-          region: data.region,
-          lat: data.loc?.split(",")[0],
-          lon: data.loc?.split(",")[1],
-          timezone: data.timezone,
-          current_time: new Date().toLocaleString("en-US", {
-            timeZone: data.timezone,
-          }),
-        })
-      );
-    } catch (e) {
-      return new ExecutableGameFunctionResponse(
-        ExecutableGameFunctionStatus.Failed,
-        `Failed to fetch location data: ${
-          e instanceof Error ? e.message : "Unknown error"
-        }`
-      );
-    }
-  },
-});
-
-// Function to get weather data
-export const getWeatherFunction = new GameFunction({
-  name: "get_weather",
-  description: "Get current weather for a location",
+export const genCourseOutlineFunction = new GameFunction({
+  name: "generate_course",
+  description: "Generate a course",
   args: [
-    { name: "city", description: "City name" },
-    { name: "country", description: "Country code (e.g., US)" },
-  ] as const,
-  executable: async (args, logger) => {
-    try {
-      const API_KEY = process.env.WEATHER_API_KEY;
-
-      const response = await fetch(
-        `https://api.openweathermap.org/data/2.5/weather?q=${args.city},${args.country}&units=metric&APPID=${API_KEY}`
-      );
-      const data = await response.json();
-
-      if (data.cod !== 200) {
-        throw new Error(data.message || "Failed to fetch weather data");
-      }
-
-      return new ExecutableGameFunctionResponse(
-        ExecutableGameFunctionStatus.Done,
-        JSON.stringify({
-          temp: data.main.temp,
-          feels_like: data.main.feels_like,
-          humidity: data.main.humidity,
-          conditions: data.weather[0].main,
-          description: data.weather[0].description,
-          wind_speed: data.wind.speed,
-        })
-      );
-    } catch (e) {
-      return new ExecutableGameFunctionResponse(
-        ExecutableGameFunctionStatus.Failed,
-        `Failed to fetch weather data: ${
-          e instanceof Error ? e.message : "Unknown error"
-        }`
-      );
-    }
-  },
-});
-
-// Function to recommend activities using OpenAI
-export const recommendActivitiesFunction = new GameFunction({
-  name: "recommend_activities",
-  description: "Recommend activities based on weather and location",
-  args: [
-    { name: "weather", description: "Weather in temrms of tempearture only" },
-    { name: "location", description: "the city and country" },
+    { name: "target", description: "Learning objectives" },
+    {
+      name: "daysRequired",
+      description:
+        "The number of days it will take to complete this learning goal",
+    },
   ] as const,
   executable: async (args, logger) => {
     // Create prompt for OpenAI
-    const prompt = `Given the following weather:${args.weather} in ${args.location}:
+    const prompt = `Given a learning objective: ${args.target} and the number of days required: ${args.daysRequired}:
 
-            Please recommend 5 suitable activities for this weather and location...`;
+            Please generate a course outline...`;
 
     const completion = await openai.chat.completions.create({
       messages: [{ role: "user", content: prompt }],
@@ -134,11 +48,39 @@ export const recommendActivitiesFunction = new GameFunction({
 
     const recommendations = completion.choices[0].message.content;
 
-    logger("Generated activity recommendations using AI");
+    logger("Generated course outline using AI");
 
     return new ExecutableGameFunctionResponse(
       ExecutableGameFunctionStatus.Done,
-      `Based on the current conditions in ${args.location}, here are some recommended activities:\n\n${recommendations}`
+      `Based on the learning objectives, here is the generated course outline:\n\n${recommendations}`
+    );
+  },
+});
+
+export const genCourseContentByOutlineFunction = new GameFunction({
+  name: "generate_course_content",
+  description: "Generate course content",
+  args: [{ name: "courseOutline", description: "Course outline" }] as const,
+  executable: async (args, logger) => {
+    // Create prompt for OpenAI
+    const prompt = `Given a course outline: ${args.courseOutline}:
+
+            Please generate the content for this course...`;
+
+    const completion = await openai.chat.completions.create({
+      messages: [{ role: "user", content: prompt }],
+      model: "DeepSeek-V3",
+      temperature: 0.7,
+      max_tokens: 500,
+    });
+
+    const recommendations = completion.choices[0].message.content;
+
+    logger("Generated course content using AI");
+
+    return new ExecutableGameFunctionResponse(
+      ExecutableGameFunctionStatus.Done,
+      `Based on the course outline, here is the generated content:\n\n${recommendations}`
     );
   },
 });
