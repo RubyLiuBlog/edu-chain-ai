@@ -26,7 +26,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # local env files
-.env*
+.env
 
 # vercel
 .vercel
@@ -38,7 +38,5 @@ next-env.d.ts
 # foundry
 cache/
 out/
-!/broadcast
-/broadcast/*/31337/
-/broadcast/**/dry-run/
 .wake
+broadcast
