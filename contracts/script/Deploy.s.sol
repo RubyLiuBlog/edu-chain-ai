@@ -13,7 +13,7 @@ import "../src/TargetContract.sol";
 contract DeployScript is Script {
     function run() external {
         // 获取部署者私钥
-        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        uint256 deployerPrivateKey = vm.envUint("ANVIL_PRIVATE_KEY");
         address deployerAddress = vm.addr(deployerPrivateKey);
 
         // 打印部署者地址
