@@ -1,42 +1,38 @@
-# game-starter
+# Agent design
 
-### This is a starter project using the core components of the G.A.M.E SDK
+Each Agent is responsible for implementing a key function in the education platform:
 
-To get an API KEY https://console.game.virtuals.io/
+1. CourseGenAgent
 
-Available packages:
-Python: https://github.com/game-by-virtuals/game-python
-Typescript: https://github.com/game-by-virtuals/game-node
-NPM: https://www.npmjs.com/package/@virtuals-protocol/game
+- Receive user learning goals and course duration, and use `DeepSeek-V3` to generate high-quality structured course outlines and outline content
 
-## Prerequisites
+- Support JSON format output
 
-- nvm
-- git
-- node
+- Automatically upload the generated courses to IPFS to ensure permanent storage
 
-required environment variables:
+1. TestGenAgent
 
-- GAME_API_KEY : API key for the GAME framework, https://docs.game.virtuals.io/game-sdk
-- WEATHER_API_KEY: API key for the weather API, get it from https://openweathermap.org/api
-- OPENAI_API_KEY: API key for the OpenAI API, get it from https://platform.openai.com/api-keys
+- Automatically generate test questions based on chapter content
+- Support single-choice questions, multiple-choice questions, and short-answer questions
 
-## To run project
+- Includes the function of verifying the question format to ensure that the generated content meets the standards
 
-1. Start from the game starter directory
-   `cd game-starter`
-2. Copy the environment file
-   `cp .env.example .env`
-3. Place your API key in the ".env" file
-4. Start the project with `npm install && npm run build && npm start`
-5. Or run with docker compose
-   `docker compose up -d`
-   **Note** We recommend using nvm version 23 `nvm use 23`
+- Can adjust the difficulty level of the questions (easy, medium, difficult)
 
-## To run project in Phala TEE
+3. ScoringAgent
 
-1. Build the docker image and publish it to the docker hub
-   `docker compose build -t <your-dockerhub-username>/virtuals-game-starter`
-   `docker push <your-dockerhub-username>/virtuals-game-starter`
-2. Deploy to Phala cloud using [tee-cloud-cli](https://github.com/Phala-Network/tee-cloud-cli) or manually with the [Cloud dashboard](https://cloud.phala.network/).
-3. Check your agent's TEE proof and verify it on the [TEE Attestation Explorer](https://proof.t16z.com/).
+- Automatically evaluate users' test answers and provide detailed feedback
+
+- Use exact matching to score multiple-choice questions
+
+- Use Embedding similarity comparison to score short-answer questions
+
+- Use smart contracts to issue token rewards: 80-90 points get 1 token, 90-95 points get 2 tokens, and 95 points or above get 3 tokens
+
+4. NFTGeneratorAgent (NFT Generator Agent)
+
+- Generate dynamic NFT metadata based on the user's learning data
+- Generate achievement-related images using the Stable Diffusion API (including alternate Canvas image generation)
+- Automatically upload generated images and metadata to IPFS
+- NFT attributes reflect the user's learning progress, completed courses, and scores
+
