@@ -12,8 +12,8 @@ import OpenAI from 'openai';
 import pinataSDK from '@pinata/sdk';
 import fetch from 'node-fetch';
 import { createCanvas } from 'canvas';
-import * as fs from 'fs';
-import * as path from 'path';
+import fs from 'fs';
+import path from 'path';
 
 // Load environment variables
 config({ path: resolve(__dirname, '../.env') });
