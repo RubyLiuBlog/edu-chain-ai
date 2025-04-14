@@ -154,9 +154,6 @@ async function testGenerateCourse(userGoal: string, days: number) {
   }
 }
 
-// 调用测试函数
-testGenerateCourse("我想学习React前端开发", 7);
-
 
 // Export the agent for potential imports
 export { testGenerateCourse };
