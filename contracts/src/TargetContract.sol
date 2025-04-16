@@ -3,7 +3,6 @@ pragma solidity ^0.8.28;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./interfaces/IEduToken.sol";
-import "./interfaces/IAchievementNFT.sol";
 
 /**
  * @title TargetContract
@@ -37,7 +36,6 @@ contract TargetContract is Ownable {
     address public aiAgent;
     // 相关合约地址
     IEduToken public eduToken;
-    IAchievementNFT public achievementNFT;
 
     // 事件定义
     event TargetCreated(
@@ -62,16 +60,10 @@ contract TargetContract is Ownable {
     /**
      * @dev 构造函数
      * @param _eduToken EduToken合约地址
-     * @param _achievementNFT AchievementNFT合约地址
      * @param _aiAgent AI Agent地址
      */
-    constructor(
-        address _eduToken,
-        address _achievementNFT,
-        address _aiAgent
-    ) Ownable(msg.sender) {
+    constructor(address _eduToken, address _aiAgent) Ownable(msg.sender) {
         eduToken = IEduToken(_eduToken);
-        achievementNFT = IAchievementNFT(_achievementNFT);
         aiAgent = _aiAgent;
     }
 
@@ -163,7 +155,6 @@ contract TargetContract is Ownable {
         if (!target.isCompleted && checkTargetCompletion(targetId)) {
             target.isCompleted = true;
             target.completedDate = block.timestamp;
-            achievementNFT.mint(user, targetId);
             emit TargetCompleted(targetId, block.timestamp);
         }
     }

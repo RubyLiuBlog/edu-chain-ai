@@ -24,7 +24,10 @@ contract EduToken is ERC20, Ownable {
     /**
      * @dev 构造函数
      */
-    constructor() ERC20("EduToken", "EDU") Ownable(msg.sender) {}
+    constructor() ERC20("EduToken", "EDU") Ownable(msg.sender) {
+        // 初始铸造10000个代币给合约创建者
+        _mint(msg.sender, 10000 * 10 ** decimals());
+    }
 
     /**
      * @dev 设置TargetContract地址

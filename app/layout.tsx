@@ -30,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const navItems = [
-    { label: "My targets", href: "/target/list" },
+    { label: "My Targets", href: "/target/list" },
     { label: "NFT Gallery", href: "/nft/gallery" },
     { label: "NFT Market", href: "/nft/market" },
   ];
@@ -101,7 +101,15 @@ export default function RootLayout({
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                   <div>
                     <h3 className="text-lg font-medium mb-4">关于我们</h3>
-                    <p className="text-slate-400">EduChain AI is a</p>
+                    <p className="text-slate-400">
+                      EduChain AI is an AI-driven autonomous online school that
+                      provides developers with adaptive learning paths, on-chain
+                      certification, and real-time skill matching. The system
+                      uses multiple autonomous AI agents to manage course
+                      generation, personalized tutoring, gamified learning,
+                      on-chain certification, and job matching, with all key
+                      decisions verified on the Base chain.
+                    </p>
                   </div>
                   <div>
                     <h3 className="text-lg font-medium mb-4">快速链接</h3>
