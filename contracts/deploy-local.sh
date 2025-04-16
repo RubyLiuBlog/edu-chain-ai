@@ -26,7 +26,7 @@ fi
 
 # 运行部署脚本
 echo "Deploying contracts..."
-forge script script/Deploy.s.sol:DeployScript --rpc-url $ANVIL_RPC_URL --broadcast -vvv
+forge script script/Deploy-anvil.s.sol:DeployScript --rpc-url $ANVIL_RPC_URL --broadcast -vvv
 
 # 如果我们启动了 Anvil，则在脚本执行完毕后提示用户
 if [ -n "$ANVIL_PID" ]; then

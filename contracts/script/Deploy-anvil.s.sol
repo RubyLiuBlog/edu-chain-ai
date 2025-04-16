@@ -4,6 +4,8 @@ pragma solidity ^0.8.28;
 import "forge-std/Script.sol";
 import "../src/EduToken.sol";
 import "../src/TargetContract.sol";
+import "../src/NFTMarketItem.sol";
+import "../src/NFTMarket.sol";
 
 /**
  * @title DeployScript
@@ -21,22 +23,31 @@ contract DeployScript is Script {
         // 开始部署过程
         vm.startBroadcast(deployerPrivateKey);
 
-        // 1. 部署 EduToken
-        EduToken eduToken = new EduToken();
-        console.log("EduToken deployed at:", address(eduToken));
-
-        // 3. 设置 AI Agent 地址 (在测试环境中可以使用部署者地址)
+        // 设置 AI Agent 地址 (在测试环境中可以使用部署者地址)
         address aiAgent = deployerAddress;
         console.log("Using AI Agent address:", aiAgent);
 
-        // 4. 部署 TargetContract
+        // 部署 EduToken
+        EduToken eduToken = new EduToken();
+        console.log("EduToken deployed at:", address(eduToken));
+
+        // 部署 TargetContract
         TargetContract targetContract = new TargetContract(
             address(eduToken),
             aiAgent
         );
         console.log("TargetContract deployed at:", address(targetContract));
 
-        // 5. 配置合约之间的关联关系
+        // 部署 NFTMarketItem
+        NFTMarketItem nftMarketItem = new NFTMarketItem(aiAgent);
+        console.log("NFTMarketItem deployed at:", address(nftMarketItem));
+
+        NFTMarket nftMarket = new NFTMarket(
+            address(eduToken),
+            address(nftMarketItem),
+            aiAgent
+        );
+        console.log("NFTMarket deployed at:", address(nftMarket));
         // 设置 EduToken 的 targetContract
         eduToken.setTargetContract(address(targetContract));
         console.log("EduToken.targetContract set to:", address(targetContract));
