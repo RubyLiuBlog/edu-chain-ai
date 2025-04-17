@@ -22,8 +22,6 @@
     "@types/dotenv": "^6.1.1",
     "@virtuals-protocol/game": "^0.1.9",
     "dotenv": "^16.4.7",
-    "ethers": "^6.13.5",
-    "koa": "^2.16.1",
     "openai": "^4.81.0",
     "pinata": "^2.2.0"
   }
