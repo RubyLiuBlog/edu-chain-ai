@@ -11,7 +11,7 @@ export default function App() {
   });
   const [generationProgress, setGenerationProgress] = useState(0);
 
-  const handleChange = (e: { target: { name: unknown; value: unknown } }) => {
+  const handleChange = (e: { target: { name: string; value: string } }) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
