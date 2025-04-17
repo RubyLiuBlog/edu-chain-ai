@@ -17,16 +17,17 @@ export class AuthService {
     this.redisClient = new Redis({
       host: this.configService.get<string>('REDIS_HOST', 'localhost'),
       port: this.configService.get<number>('REDIS_PORT', 6379),
+      password: this.configService.get<string>('REDIS_PASSWORD', 'z123456'),
     });
   }
 
-  async validateSignature(
+  validateSignature(
     address: string,
     signature: string,
     message: string,
-  ): Promise<boolean> {
+  ): boolean {
     try {
-      const recoveredAddress = await this.blockchainService.recoverAddress(
+      const recoveredAddress = this.blockchainService.recoverAddress(
         message,
         signature,
       );
@@ -37,7 +38,7 @@ export class AuthService {
     }
   }
 
-  async login(address: string): Promise<{ token: string }> {
+  async login(address: string): Promise<{ token: string; sessionId: string }> {
     // Generate a unique session ID for the user
     const sessionId = uuidv4();
 
@@ -56,10 +57,11 @@ export class AuthService {
       86400,
     );
 
-    return { token };
+    return { token, sessionId };
   }
 
-  async validateSession(sessionId: string): Promise<any | null> {
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+  async validateSession(sessionId: string): Promise<unknown | null> {
     const sessionData = await this.redisClient.get(`session:${sessionId}`);
     if (!sessionData) {
       return null;

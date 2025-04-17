@@ -17,6 +17,7 @@ import { BlockchainModule } from './blockchain/blockchain.module';
         redis: {
           host: configService.get('REDIS_HOST', 'localhost'),
           port: configService.get<number>('REDIS_PORT', 6379),
+          password: configService.get('REDIS_PASSWORD', 'z123456'),
         },
       }),
       inject: [ConfigService],

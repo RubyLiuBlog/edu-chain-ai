@@ -81,7 +81,17 @@ export class TargetService {
     );
 
     // Process the target using AI Agent
-    this.processTargetWithAI(taskId, goal, days);
+    this.processTargetWithAI(taskId, goal, days).catch((error) => {
+      console.error('Error processing target with AI:', error);
+      // Update status to failed
+      const targetData = this.processingTargets.get(taskId);
+      if (targetData) {
+        targetData.status = 'failed';
+        this.processingTargets.set(taskId, targetData);
+      }
+      // Notify through websocket
+      this.targetGateway.notifyTargetFailed(taskId, error.message as string);
+    });
 
     return { taskId };
   }

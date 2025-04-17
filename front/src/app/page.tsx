@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { useAccount } from "wagmi";
 
 export default function App() {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { isConnected } = useAccount();
   const [formData, setFormData] = useState({
     goal: "",
     days: 7,
@@ -43,7 +45,7 @@ export default function App() {
     }, 1000);
   };
 
-  return (
+  return isConnected ? (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
@@ -124,5 +126,7 @@ export default function App() {
         )}
       </div>
     </motion.div>
+  ) : (
+    <div> please click right top button </div>
   );
 }
